@@ -1,0 +1,41 @@
+(* ============================================================ *)
+(* cat1_knowledge.pv - Categories A and B: knowledge factors    *)
+(*                                                              *)
+(* Model: C holds a password pwd. Under C1 and C3, C gives pwd  *)
+(* to I, who types it on the terminal.                          *)
+(* The Dolev-Yao adversary plays the role of I.                 *)
+(*                                                              *)
+(* Expected results:                                            *)
+(*   P1 - cannot be proved (adversary forges the consent)       *)
+(*   P2 - cannot be proved (adversary forges auth with pwd)     *)
+(*   P3 - cannot be proved (secretDoc travels on chT)           *)
+(*                                                              *)
+(* Run with: proverif -lib common.pvl cat1_knowledge.pv         *)
+(* ============================================================ *)
+
+
+let processCitizen(pwd: bitstring) =
+  in(chT, s: nonce);
+  event ConsentGiven(citizenID, s);
+  event AuthUsed(pwd, s);
+  out(chT, pwd).
+
+let processServer(pwd: bitstring) =
+  new s: nonce;
+  out(chT, s);
+  in(chT, x: bitstring);
+  if x = pwd then
+  event ConsentAccepted(citizenID, s);
+  event AuthAccepted(x, s);
+  out(chT, secretDoc).
+
+(* Main process.
+   pwd is a secret shared by C and S.
+   Replication (!) allows multiple sessions: the adversary
+   captures pwd and forges sessions without involving C. *)
+process
+  new pwd: bitstring;
+  (
+    !processCitizen(pwd)
+  | !processServer(pwd)
+  )

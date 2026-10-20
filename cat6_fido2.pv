@@ -1,0 +1,66 @@
+(* ============================================================ *)
+(* cat6_fido2.pv - Category F: FIDO2 / WebAuthn                 *)
+(*                                                              *)
+(* Model: a hardware module (authenticator) confines skC.       *)
+(* The private key never leaves the module. The response        *)
+(* travels on a private channel chAuth out of I's reach.        *)
+(* (See cat6_fido2_public_response.pv for a public variant.)    *)
+(*                                                              *)
+(* Under C3, I can trigger the authenticator by sending a       *)
+(* challenge on chT. The activation gesture (touch, biometric)  *)
+(* can be performed or guided by I.                             *)
+(*                                                              *)
+(* Expected results:                                            *)
+(*   P1 - cannot be proved (adversary triggers the module)      *)
+(*   P2 - proved (non-forgeability: confined key + challenge)   *)
+(*   P3 - cannot be proved (secretDoc travels on chT)           *)
+(*                                                              *)
+(* Run with: proverif -lib common.pvl cat6_fido2.pv             *)
+(* ============================================================ *)
+
+
+(* Internal channel of the authenticator: private, out of I's reach *)
+free chAuth: channel [private].
+
+
+(* Citizen process: gives consent.
+   In practice, C performs a physical gesture (touching the module).
+   Under C3 this gesture can be guided or simulated by I, so the
+   adversary can trigger the authenticator without C emitting
+   ConsentGiven. *)
+let processCitizen_FIDO2() =
+  in(chT, s: nonce);
+  event ConsentGiven(citizenID, s).
+
+(* Authenticator: hardware module that confines skC.
+   Answers any challenge received on chT and does not check
+   who triggered the activation. *)
+let processAuthenticator(skC: key) =
+  in(chT, s: nonce);
+  let response = sign(nonce2bs(s), skC) in
+  event AuthUsed(response, s);
+  out(chAuth, response).
+
+(* Server: creates a challenge and waits for the response on chAuth.
+   chAuth is private: only the authenticator can write on it.
+   The adversary can neither intercept nor forge the response. *)
+let processServer_FIDO2(pkC: key) =
+  new s: nonce;
+  out(chT, s);
+  in(chAuth, response: bitstring);
+  let (=nonce2bs(s)) = checksign(response, pkC) in
+  event ConsentAccepted(citizenID, s);
+  event AuthAccepted(response, s);
+  out(chT, secretDoc).
+
+(* skC is created with new (private) and never exposed to the
+   adversary. The authenticator uses skC internally.
+   The server knows the public key pkC (FIDO2 registration). *)
+process
+  new skC: key;
+  let pkC = pk(skC) in
+  (
+    !processCitizen_FIDO2()
+  | !processAuthenticator(skC)
+  | !processServer_FIDO2(pkC)
+  )

@@ -1,0 +1,50 @@
+(* ============================================================ *)
+(* cat5_crypto_deleg.pv - Categories E and H: software key and  *)
+(*                        cryptographic delegation              *)
+(*                                                              *)
+(* Model: C holds a key pair (skC, pkC). S sends a challenge    *)
+(* (nonce), C signs it with skC.                                *)
+(* Under C1, skC sits on I's terminal: free and public.         *)
+(*                                                              *)
+(* Expected results:                                            *)
+(*   P1 - cannot be proved (adversary signs with skC)           *)
+(*   P2 - cannot be proved (adversary forges signatures)        *)
+(*   P3 - cannot be proved (secretDoc travels on chT)           *)
+(*                                                              *)
+(* Note: P2 is non-forgeability. Although every signature is    *)
+(* bound to the session challenge, the adversary holds skC and  *)
+(* can produce valid proofs for any future session.             *)
+(*                                                              *)
+(* Run with: proverif -lib common.pvl cat5_crypto_deleg.pv      *)
+(* ============================================================ *)
+
+
+(* skC is public: under C1, the private key sits on I's terminal *)
+free skC: key.
+
+
+let processCitizen_Crypto() =
+  in(chT, s: nonce);
+  let response = sign(nonce2bs(s), skC) in
+  event ConsentGiven(citizenID, s);
+  event AuthUsed(response, s);
+  out(chT, response).
+
+let processServer_Crypto() =
+  new s: nonce;
+  out(chT, s);
+  in(chT, response: bitstring);
+  let (=nonce2bs(s)) = checksign(response, pk(skC)) in
+  event ConsentAccepted(citizenID, s);
+  event AuthAccepted(response, s);
+  out(chT, secretDoc).
+
+(* The adversary knows skC. It intercepts the server's challenge s,
+   computes sign(nonce2bs(s), skC), and sends it to the server.
+   No citizen process is involved: neither ConsentGiven nor
+   AuthUsed is emitted. P1 and P2 are violated. *)
+process
+  (
+    !processCitizen_Crypto()
+  | !processServer_Crypto()
+  )

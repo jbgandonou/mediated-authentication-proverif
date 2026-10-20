@@ -1,0 +1,234 @@
+Process 0 (that is, the initial process):
+{1}new idpSk: key;
+{2}let idpPk: key = pk(idpSk) in
+(
+    {3}!
+    {4}let idpSk_1: key = idpSk in
+    {5}in(chBrowser, authReq: bitstring);
+    {6}new tokenPayload: bitstring;
+    {7}let signedToken: bitstring = sign(tokenPayload,idpSk_1) in
+    {8}out(chBrowser, signedToken)
+) | (
+    {9}!
+    {10}in(chBrowser, s: nonce);
+    {11}event ConsentGiven(citizenID,s);
+    {12}out(chBrowser, citizenID);
+    {13}in(chBrowser, token: bitstring);
+    {14}event AuthUsed(token,s);
+    {15}out(chBrowser, token)
+) | (
+    {16}!
+    {17}new s_1: nonce;
+    {18}out(chBrowser, s_1);
+    {19}in(chBrowser, token_1: bitstring);
+    {20}let payload: bitstring = checksign(token_1,idpPk) in
+    {21}event ConsentAccepted(citizenID,s_1);
+    {22}event AuthAccepted(token_1,s_1);
+    {23}out(chBrowser, secretDoc)
+)
+
+--  Process 1 (that is, process 0, with let moved downwards):
+{1}new idpSk: key;
+(
+    {3}!
+    {5}in(chBrowser, authReq: bitstring);
+    {6}new tokenPayload: bitstring;
+    {4}let idpSk_1: key = idpSk in
+    {7}let signedToken: bitstring = sign(tokenPayload,idpSk_1) in
+    {8}out(chBrowser, signedToken)
+) | (
+    {9}!
+    {10}in(chBrowser, s: nonce);
+    {11}event ConsentGiven(citizenID,s);
+    {12}out(chBrowser, citizenID);
+    {13}in(chBrowser, token: bitstring);
+    {14}event AuthUsed(token,s);
+    {15}out(chBrowser, token)
+) | (
+    {16}!
+    {17}new s_1: nonce;
+    {18}out(chBrowser, s_1);
+    {19}in(chBrowser, token_1: bitstring);
+    {2}let idpPk: key = pk(idpSk) in
+    {20}let payload: bitstring = checksign(token_1,idpPk) in
+    {21}event ConsentAccepted(citizenID,s_1);
+    {22}event AuthAccepted(token_1,s_1);
+    {23}out(chBrowser, secretDoc)
+)
+
+-- Query inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2))
+goal reachable: attacker(authReq_1) -> inj-event(ConsentAccepted(citizenID[],s_2),@occ21_1)
+Abbreviations:
+s_2 = s_1[!1 = @sid]
+tokenPayload_1 = tokenPayload[authReq = authReq_1,!1 = @sid_1]
+@occ21_1 = @occ21[token_1 = sign(tokenPayload_1,idpSk[]),!1 = @sid]
+
+Derivation:
+Abbreviations:
+s_2 = s_1[!1 = @sid]
+tokenPayload_1 = tokenPayload[authReq = authReq_1,!1 = @sid_1]
+@occ21_1 = @occ21[token_1 = sign(tokenPayload_1,idpSk[]),!1 = @sid]
+
+1. We assume as hypothesis that
+attacker(authReq_1).
+
+2. The message authReq_1 that the attacker may have by 1 may be received at input {5}.
+So the message sign(tokenPayload_1,idpSk[]) may be sent to the attacker at output {8}.
+attacker(sign(tokenPayload_1,idpSk[])).
+
+3. The message sign(tokenPayload_1,idpSk[]) that the attacker may have by 2 may be received at input {19}.
+So event ConsentAccepted(citizenID[],s_2) may be executed at {21} in session @sid.
+inj-event(ConsentAccepted(citizenID[],s_2),@occ21_1).
+
+4. By 3, inj-event(ConsentAccepted(citizenID[],s_2),@occ21_1).
+The goal is reached, represented in the following fact:
+inj-event(ConsentAccepted(citizenID[],s_2),@occ21_1).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new idpSk: key creating idpSk_2 at {1}
+
+new s_1: nonce creating s_3 at {17} in copy a
+
+out(chBrowser, ~M) with ~M = s_3 at {18} in copy a
+
+in(chBrowser, a_1) at {5} in copy a_2
+
+new tokenPayload: bitstring creating tokenPayload_2 at {6} in copy a_2
+
+out(chBrowser, ~M_1) with ~M_1 = sign(tokenPayload_2,idpSk_2) at {8} in copy a_2
+
+in(chBrowser, ~M_1) with ~M_1 = sign(tokenPayload_2,idpSk_2) at {19} in copy a
+
+event ConsentAccepted(citizenID,s_3) at {21} in copy a (goal)
+
+The event ConsentAccepted(citizenID,s_3) is executed at {21} in copy a.
+A trace has been found.
+RESULT inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2)) is false.
+RESULT (even event(ConsentAccepted(cid,s_2)) ==> event(ConsentGiven(cid,s_2)) is false.)
+-- Query inj-event(AuthAccepted(t,s_2)) ==> inj-event(AuthUsed(t,s_2)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query inj-event(AuthAccepted(t,s_2)) ==> inj-event(AuthUsed(t,s_2))
+goal reachable: attacker(authReq_1) -> inj-event(AuthAccepted(sign(tokenPayload_1,idpSk[]),s_2),@occ22_1)
+Abbreviations:
+tokenPayload_1 = tokenPayload[authReq = authReq_1,!1 = @sid]
+s_2 = s_1[!1 = @sid_1]
+@occ22_1 = @occ22[token_1 = sign(tokenPayload_1,idpSk[]),!1 = @sid_1]
+
+Derivation:
+Abbreviations:
+tokenPayload_1 = tokenPayload[authReq = authReq_1,!1 = @sid]
+s_2 = s_1[!1 = @sid_1]
+@occ22_1 = @occ22[token_1 = sign(tokenPayload_1,idpSk[]),!1 = @sid_1]
+
+1. We assume as hypothesis that
+attacker(authReq_1).
+
+2. The message authReq_1 that the attacker may have by 1 may be received at input {5}.
+So the message sign(tokenPayload_1,idpSk[]) may be sent to the attacker at output {8}.
+attacker(sign(tokenPayload_1,idpSk[])).
+
+3. The message sign(tokenPayload_1,idpSk[]) that the attacker may have by 2 may be received at input {19}.
+So event AuthAccepted(sign(tokenPayload_1,idpSk[]),s_2) may be executed at {22} in session @sid_1.
+inj-event(AuthAccepted(sign(tokenPayload_1,idpSk[]),s_2),@occ22_1).
+
+4. By 3, inj-event(AuthAccepted(sign(tokenPayload_1,idpSk[]),s_2),@occ22_1).
+The goal is reached, represented in the following fact:
+inj-event(AuthAccepted(sign(tokenPayload_1,idpSk[]),s_2),@occ22_1).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new idpSk: key creating idpSk_2 at {1}
+
+new s_1: nonce creating s_3 at {17} in copy a
+
+out(chBrowser, ~M) with ~M = s_3 at {18} in copy a
+
+in(chBrowser, a_1) at {5} in copy a_2
+
+new tokenPayload: bitstring creating tokenPayload_2 at {6} in copy a_2
+
+out(chBrowser, ~M_1) with ~M_1 = sign(tokenPayload_2,idpSk_2) at {8} in copy a_2
+
+in(chBrowser, ~M_1) with ~M_1 = sign(tokenPayload_2,idpSk_2) at {19} in copy a
+
+event ConsentAccepted(citizenID,s_3) at {21} in copy a
+
+event AuthAccepted(sign(tokenPayload_2,idpSk_2),s_3) at {22} in copy a (goal)
+
+The event AuthAccepted(sign(tokenPayload_2,idpSk_2),s_3) is executed at {22} in copy a.
+A trace has been found.
+RESULT inj-event(AuthAccepted(t,s_2)) ==> inj-event(AuthUsed(t,s_2)) is false.
+RESULT (even event(AuthAccepted(t,s_2)) ==> event(AuthUsed(t,s_2)) is false.)
+-- Query not attacker(secretDoc[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query not attacker(secretDoc[])
+goal reachable: attacker(secretDoc[])
+
+Derivation:
+Abbreviations:
+tokenPayload_1 = tokenPayload[authReq = authReq_1,!1 = @sid]
+
+1. The attacker has some term authReq_1.
+attacker(authReq_1).
+
+2. The message authReq_1 that the attacker may have by 1 may be received at input {5}.
+So the message sign(tokenPayload_1,idpSk[]) may be sent to the attacker at output {8}.
+attacker(sign(tokenPayload_1,idpSk[])).
+
+3. The message sign(tokenPayload_1,idpSk[]) that the attacker may have by 2 may be received at input {19}.
+So the message secretDoc[] may be sent to the attacker at output {23}.
+attacker(secretDoc[]).
+
+4. By 3, attacker(secretDoc[]).
+The goal is reached, represented in the following fact:
+attacker(secretDoc[]).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new idpSk: key creating idpSk_2 at {1}
+
+new s_1: nonce creating s_2 at {17} in copy a
+
+out(chBrowser, ~M) with ~M = s_2 at {18} in copy a
+
+in(chBrowser, a_1) at {5} in copy a_2
+
+new tokenPayload: bitstring creating tokenPayload_2 at {6} in copy a_2
+
+out(chBrowser, ~M_1) with ~M_1 = sign(tokenPayload_2,idpSk_2) at {8} in copy a_2
+
+in(chBrowser, ~M_1) with ~M_1 = sign(tokenPayload_2,idpSk_2) at {19} in copy a
+
+event ConsentAccepted(citizenID,s_2) at {21} in copy a
+
+event AuthAccepted(sign(tokenPayload_2,idpSk_2),s_2) at {22} in copy a
+
+out(chBrowser, ~M_2) with ~M_2 = secretDoc at {23} in copy a
+
+The attacker has the message ~M_2 = secretDoc.
+A trace has been found.
+RESULT not attacker(secretDoc[]) is false.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2)) is false.
+
+Query inj-event(AuthAccepted(t,s_2)) ==> inj-event(AuthUsed(t,s_2)) is false.
+
+Query not attacker(secretDoc[]) is false.
+
+--------------------------------------------------------------
+

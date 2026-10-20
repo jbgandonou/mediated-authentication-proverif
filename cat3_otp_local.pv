@@ -1,0 +1,46 @@
+(* ============================================================ *)
+(* cat3_otp_local.pv - Category D: local OTP (TOTP/HOTP)        *)
+(*                                                              *)
+(* Model: a shared secret K generates TOTP codes.               *)
+(* Under C1, K is stored on I's terminal (or C hands their      *)
+(* device to I). K is therefore a public free name.             *)
+(*                                                              *)
+(* Expected results:                                            *)
+(*   P1 - cannot be proved (adversary forges the consent)       *)
+(*   P2 - cannot be proved (adversary computes TOTPs with K)    *)
+(*   P3 - cannot be proved (secretDoc travels on chT)           *)
+(*                                                              *)
+(* Run with: proverif -lib common.pvl cat3_otp_local.pv         *)
+(* ============================================================ *)
+
+
+fun totp(bitstring, nonce): bitstring.
+
+(* K is public: under C1, the secret sits on I's terminal *)
+free K: bitstring.
+
+
+let processCitizen_TOTP() =
+  in(chT, s: nonce);
+  new timeSlot: nonce;
+  let code = totp(K, timeSlot) in
+  event ConsentGiven(citizenID, s);
+  event AuthUsed(code, s);
+  out(chT, (code, timeSlot)).
+
+let processServer_TOTP() =
+  new s: nonce;
+  out(chT, s);
+  in(chT, (x: bitstring, t: nonce));
+  if x = totp(K, t) then
+  event ConsentAccepted(citizenID, s);
+  event AuthAccepted(x, s);
+  out(chT, secretDoc).
+
+(* The adversary knows K and can compute totp(K, t')
+   for any time slot t', without involving C. *)
+process
+  (
+    !processCitizen_TOTP()
+  | !processServer_TOTP()
+  )

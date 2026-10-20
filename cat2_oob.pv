@@ -1,0 +1,44 @@
+(* ============================================================ *)
+(* cat2_oob.pv - Category C: out-of-band OTP (SMS)              *)
+(*                                                              *)
+(* Model: S sends a one-time code on an out-of-band channel.    *)
+(* Under C1, the SMS reaches I's phone, or C hands their phone  *)
+(* to I. The OTP channel is therefore public.                   *)
+(*                                                              *)
+(* Expected results:                                            *)
+(*   P1 - cannot be proved (adversary bypasses C)               *)
+(*   P2 - cannot be proved (adversary forges auth with the OTP) *)
+(*   P3 - cannot be proved (secretDoc travels on chT)           *)
+(*                                                              *)
+(* Run with: proverif -lib common.pvl cat2_oob.pv               *)
+(* ============================================================ *)
+
+
+free chOTP: channel.   (* OTP channel: public under C1 *)
+
+
+let processCitizen_OTP() =
+  in(chT, s: nonce);
+  in(chOTP, otp: bitstring);
+  event ConsentGiven(citizenID, s);
+  event AuthUsed(otp, s);
+  out(chT, otp).
+
+let processServer_OTP() =
+  new s: nonce;
+  out(chT, s);
+  new otp: bitstring;
+  out(chOTP, otp);
+  in(chT, x: bitstring);
+  if x = otp then
+  event ConsentAccepted(citizenID, s);
+  event AuthAccepted(x, s);
+  out(chT, secretDoc).
+
+(* The adversary reads the OTP on chOTP and sends it
+   directly on chT without involving C. *)
+process
+  (
+    !processCitizen_OTP()
+  | !processServer_OTP()
+  )

@@ -1,0 +1,198 @@
+Process 0 (that is, the initial process):
+(
+    {1}!
+    {2}in(chT, s: nonce);
+    {3}let response: bitstring = sign(s,skC) in
+    {4}event ConsentGiven(citizenID,s);
+    {5}event AuthUsed(response,s);
+    {6}out(chT, response)
+) | (
+    {7}!
+    {8}new s_1: nonce;
+    {9}out(chT, s_1);
+    {10}in(chT, response_1: bitstring);
+    {11}let =s_1 = checksign(response_1,pk(skC)) in
+    {12}event ConsentAccepted(citizenID,s_1);
+    {13}event AuthAccepted(response_1,s_1);
+    {14}out(chT, secretDoc)
+)
+
+--  Process 1 (that is, process 0, with let moved downwards):
+(
+    {1}!
+    {2}in(chT, s: nonce);
+    {4}event ConsentGiven(citizenID,s);
+    {3}let response: bitstring = sign(s,skC) in
+    {5}event AuthUsed(response,s);
+    {6}out(chT, response)
+) | (
+    {7}!
+    {8}new s_1: nonce;
+    {9}out(chT, s_1);
+    {10}in(chT, response_1: bitstring);
+    {11}let =s_1 = checksign(response_1,pk(skC)) in
+    {12}event ConsentAccepted(citizenID,s_1);
+    {13}event AuthAccepted(response_1,s_1);
+    {14}out(chT, secretDoc)
+)
+
+-- Query inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2))
+goal reachable: inj-event(ConsentAccepted(citizenID[],s_2),@occ12_1)
+Abbreviations:
+s_2 = s_1[!1 = @sid]
+@occ12_1 = @occ12[response_1 = sign(s_2,skC[]),!1 = @sid]
+
+Derivation:
+Abbreviations:
+s_2 = s_1[!1 = @sid]
+@occ12_1 = @occ12[response_1 = sign(s_2,skC[]),!1 = @sid]
+
+1. The attacker initially knows skC[].
+attacker(skC[]).
+
+2. The message s_2 may be sent to the attacker at output {9}.
+attacker(s_2).
+
+3. By 2, the attacker may know s_2.
+By 1, the attacker may know skC[].
+Using the function sign the attacker may obtain sign(s_2,skC[]).
+attacker(sign(s_2,skC[])).
+
+4. The message sign(s_2,skC[]) that the attacker may have by 3 may be received at input {10}.
+So event ConsentAccepted(citizenID[],s_2) may be executed at {12} in session @sid.
+inj-event(ConsentAccepted(citizenID[],s_2),@occ12_1).
+
+5. By 4, inj-event(ConsentAccepted(citizenID[],s_2),@occ12_1).
+The goal is reached, represented in the following fact:
+inj-event(ConsentAccepted(citizenID[],s_2),@occ12_1).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new s_1: nonce creating s_3 at {8} in copy a
+
+out(chT, ~M) with ~M = s_3 at {9} in copy a
+
+in(chT, sign(~M,skC)) with sign(~M,skC) = sign(s_3,skC) at {10} in copy a
+
+event ConsentAccepted(citizenID,s_3) at {12} in copy a (goal)
+
+The event ConsentAccepted(citizenID,s_3) is executed at {12} in copy a.
+A trace has been found.
+RESULT inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2)) is false.
+RESULT (even event(ConsentAccepted(cid,s_2)) ==> event(ConsentGiven(cid,s_2)) is false.)
+-- Query inj-event(AuthAccepted(t,s_2)) ==> inj-event(AuthUsed(t,s_2)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query inj-event(AuthAccepted(t,s_2)) ==> inj-event(AuthUsed(t,s_2))
+goal reachable: inj-event(AuthAccepted(sign(s_2,skC[]),s_2),@occ13_1)
+Abbreviations:
+s_2 = s_1[!1 = @sid]
+@occ13_1 = @occ13[response_1 = sign(s_2,skC[]),!1 = @sid]
+
+Derivation:
+Abbreviations:
+s_2 = s_1[!1 = @sid]
+@occ13_1 = @occ13[response_1 = sign(s_2,skC[]),!1 = @sid]
+
+1. The attacker initially knows skC[].
+attacker(skC[]).
+
+2. The message s_2 may be sent to the attacker at output {9}.
+attacker(s_2).
+
+3. By 2, the attacker may know s_2.
+By 1, the attacker may know skC[].
+Using the function sign the attacker may obtain sign(s_2,skC[]).
+attacker(sign(s_2,skC[])).
+
+4. The message sign(s_2,skC[]) that the attacker may have by 3 may be received at input {10}.
+So event AuthAccepted(sign(s_2,skC[]),s_2) may be executed at {13} in session @sid.
+inj-event(AuthAccepted(sign(s_2,skC[]),s_2),@occ13_1).
+
+5. By 4, inj-event(AuthAccepted(sign(s_2,skC[]),s_2),@occ13_1).
+The goal is reached, represented in the following fact:
+inj-event(AuthAccepted(sign(s_2,skC[]),s_2),@occ13_1).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new s_1: nonce creating s_3 at {8} in copy a
+
+out(chT, ~M) with ~M = s_3 at {9} in copy a
+
+in(chT, sign(~M,skC)) with sign(~M,skC) = sign(s_3,skC) at {10} in copy a
+
+event ConsentAccepted(citizenID,s_3) at {12} in copy a
+
+event AuthAccepted(sign(s_3,skC),s_3) at {13} in copy a (goal)
+
+The event AuthAccepted(sign(s_3,skC),s_3) is executed at {13} in copy a.
+A trace has been found.
+RESULT inj-event(AuthAccepted(t,s_2)) ==> inj-event(AuthUsed(t,s_2)) is false.
+RESULT (even event(AuthAccepted(t,s_2)) ==> event(AuthUsed(t,s_2)) is false.)
+-- Query not attacker(secretDoc[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query not attacker(secretDoc[])
+goal reachable: attacker(secretDoc[])
+
+Derivation:
+Abbreviations:
+s_2 = s_1[!1 = @sid]
+
+1. The attacker initially knows skC[].
+attacker(skC[]).
+
+2. The message s_2 may be sent to the attacker at output {9}.
+attacker(s_2).
+
+3. By 2, the attacker may know s_2.
+By 1, the attacker may know skC[].
+Using the function sign the attacker may obtain sign(s_2,skC[]).
+attacker(sign(s_2,skC[])).
+
+4. The message sign(s_2,skC[]) that the attacker may have by 3 may be received at input {10}.
+So the message secretDoc[] may be sent to the attacker at output {14}.
+attacker(secretDoc[]).
+
+5. By 4, attacker(secretDoc[]).
+The goal is reached, represented in the following fact:
+attacker(secretDoc[]).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new s_1: nonce creating s_3 at {8} in copy a
+
+out(chT, ~M) with ~M = s_3 at {9} in copy a
+
+in(chT, sign(~M,skC)) with sign(~M,skC) = sign(s_3,skC) at {10} in copy a
+
+event ConsentAccepted(citizenID,s_3) at {12} in copy a
+
+event AuthAccepted(sign(s_3,skC),s_3) at {13} in copy a
+
+out(chT, ~M_1) with ~M_1 = secretDoc at {14} in copy a
+
+The attacker has the message ~M_1 = secretDoc.
+A trace has been found.
+RESULT not attacker(secretDoc[]) is false.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2)) is false.
+
+Query inj-event(AuthAccepted(t,s_2)) ==> inj-event(AuthUsed(t,s_2)) is false.
+
+Query not attacker(secretDoc[]) is false.
+
+--------------------------------------------------------------
+

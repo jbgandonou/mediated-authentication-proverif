@@ -1,0 +1,173 @@
+Process 0 (that is, the initial process):
+(
+    {1}!
+    {2}in(chT, s: nonce);
+    {3}in(chOTP, otp: bitstring);
+    {4}event ConsentGiven(citizenID,s);
+    {5}event AuthUsed(otp,s);
+    {6}out(chT, otp)
+) | (
+    {7}!
+    {8}new s_1: nonce;
+    {9}out(chT, s_1);
+    {10}new otp_1: bitstring;
+    {11}out(chOTP, otp_1);
+    {12}in(chT, x: bitstring);
+    {13}if (x = otp_1) then
+    {14}event ConsentAccepted(citizenID,s_1);
+    {15}event AuthAccepted(x,s_1);
+    {16}out(chT, secretDoc)
+)
+
+-- Query inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2)) in process 0.
+Translating the process into Horn clauses...
+Completing...
+Starting query inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2))
+goal reachable: inj-event(ConsentAccepted(citizenID[],s_2),@occ14_1)
+Abbreviations:
+s_2 = s_1[!1 = @sid]
+otp_2 = otp_1[!1 = @sid]
+@occ14_1 = @occ14[x = otp_2,!1 = @sid]
+
+Derivation:
+Abbreviations:
+s_2 = s_1[!1 = @sid]
+otp_2 = otp_1[!1 = @sid]
+@occ14_1 = @occ14[x = otp_2,!1 = @sid]
+
+1. The message otp_2 may be sent to the attacker at output {11}.
+attacker(otp_2).
+
+2. The message otp_2 that the attacker may have by 1 may be received at input {12}.
+So event ConsentAccepted(citizenID[],s_2) may be executed at {14} in session @sid.
+inj-event(ConsentAccepted(citizenID[],s_2),@occ14_1).
+
+3. By 2, inj-event(ConsentAccepted(citizenID[],s_2),@occ14_1).
+The goal is reached, represented in the following fact:
+inj-event(ConsentAccepted(citizenID[],s_2),@occ14_1).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new s_1: nonce creating s_3 at {8} in copy a
+
+out(chT, ~M) with ~M = s_3 at {9} in copy a
+
+new otp_1: bitstring creating otp_3 at {10} in copy a
+
+out(chOTP, ~M_1) with ~M_1 = otp_3 at {11} in copy a
+
+in(chT, ~M_1) with ~M_1 = otp_3 at {12} in copy a
+
+event ConsentAccepted(citizenID,s_3) at {14} in copy a (goal)
+
+The event ConsentAccepted(citizenID,s_3) is executed at {14} in copy a.
+A trace has been found.
+RESULT inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2)) is false.
+RESULT (even event(ConsentAccepted(cid,s_2)) ==> event(ConsentGiven(cid,s_2)) is false.)
+-- Query inj-event(AuthAccepted(t,s_2)) ==> inj-event(AuthUsed(t,s_2)) in process 0.
+Translating the process into Horn clauses...
+Completing...
+Starting query inj-event(AuthAccepted(t,s_2)) ==> inj-event(AuthUsed(t,s_2))
+goal reachable: inj-event(AuthAccepted(otp_2,s_2),@occ15_1)
+Abbreviations:
+otp_2 = otp_1[!1 = @sid]
+s_2 = s_1[!1 = @sid]
+@occ15_1 = @occ15[x = otp_2,!1 = @sid]
+
+Derivation:
+Abbreviations:
+otp_2 = otp_1[!1 = @sid]
+s_2 = s_1[!1 = @sid]
+@occ15_1 = @occ15[x = otp_2,!1 = @sid]
+
+1. The message otp_2 may be sent to the attacker at output {11}.
+attacker(otp_2).
+
+2. The message otp_2 that the attacker may have by 1 may be received at input {12}.
+So event AuthAccepted(otp_2,s_2) may be executed at {15} in session @sid.
+inj-event(AuthAccepted(otp_2,s_2),@occ15_1).
+
+3. By 2, inj-event(AuthAccepted(otp_2,s_2),@occ15_1).
+The goal is reached, represented in the following fact:
+inj-event(AuthAccepted(otp_2,s_2),@occ15_1).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new s_1: nonce creating s_3 at {8} in copy a
+
+out(chT, ~M) with ~M = s_3 at {9} in copy a
+
+new otp_1: bitstring creating otp_3 at {10} in copy a
+
+out(chOTP, ~M_1) with ~M_1 = otp_3 at {11} in copy a
+
+in(chT, ~M_1) with ~M_1 = otp_3 at {12} in copy a
+
+event ConsentAccepted(citizenID,s_3) at {14} in copy a
+
+event AuthAccepted(otp_3,s_3) at {15} in copy a (goal)
+
+The event AuthAccepted(otp_3,s_3) is executed at {15} in copy a.
+A trace has been found.
+RESULT inj-event(AuthAccepted(t,s_2)) ==> inj-event(AuthUsed(t,s_2)) is false.
+RESULT (even event(AuthAccepted(t,s_2)) ==> event(AuthUsed(t,s_2)) is false.)
+-- Query not attacker(secretDoc[]) in process 0.
+Translating the process into Horn clauses...
+Completing...
+Starting query not attacker(secretDoc[])
+goal reachable: attacker(secretDoc[])
+
+Derivation:
+Abbreviations:
+otp_2 = otp_1[!1 = @sid]
+
+1. The message otp_2 may be sent to the attacker at output {11}.
+attacker(otp_2).
+
+2. The message otp_2 that the attacker may have by 1 may be received at input {12}.
+So the message secretDoc[] may be sent to the attacker at output {16}.
+attacker(secretDoc[]).
+
+3. By 2, attacker(secretDoc[]).
+The goal is reached, represented in the following fact:
+attacker(secretDoc[]).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new s_1: nonce creating s_2 at {8} in copy a
+
+out(chT, ~M) with ~M = s_2 at {9} in copy a
+
+new otp_1: bitstring creating otp_3 at {10} in copy a
+
+out(chOTP, ~M_1) with ~M_1 = otp_3 at {11} in copy a
+
+in(chT, ~M_1) with ~M_1 = otp_3 at {12} in copy a
+
+event ConsentAccepted(citizenID,s_2) at {14} in copy a
+
+event AuthAccepted(otp_3,s_2) at {15} in copy a
+
+out(chT, ~M_2) with ~M_2 = secretDoc at {16} in copy a
+
+The attacker has the message ~M_2 = secretDoc.
+A trace has been found.
+RESULT not attacker(secretDoc[]) is false.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2)) is false.
+
+Query inj-event(AuthAccepted(t,s_2)) ==> inj-event(AuthUsed(t,s_2)) is false.
+
+Query not attacker(secretDoc[]) is false.
+
+--------------------------------------------------------------
+

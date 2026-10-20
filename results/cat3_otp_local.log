@@ -1,0 +1,213 @@
+Process 0 (that is, the initial process):
+(
+    {1}!
+    {2}in(chT, s: nonce);
+    {3}new timeSlot: nonce;
+    {4}let code: bitstring = totp(K,timeSlot) in
+    {5}event ConsentGiven(citizenID,s);
+    {6}event AuthUsed(code,s);
+    {7}out(chT, (code,timeSlot))
+) | (
+    {8}!
+    {9}new s_1: nonce;
+    {10}out(chT, s_1);
+    {11}in(chT, (x: bitstring,t: nonce));
+    {12}if (x = totp(K,t)) then
+    {13}event ConsentAccepted(citizenID,s_1);
+    {14}event AuthAccepted(x,s_1);
+    {15}out(chT, secretDoc)
+)
+
+--  Process 1 (that is, process 0, with let moved downwards):
+(
+    {1}!
+    {2}in(chT, s: nonce);
+    {3}new timeSlot: nonce;
+    {5}event ConsentGiven(citizenID,s);
+    {4}let code: bitstring = totp(K,timeSlot) in
+    {6}event AuthUsed(code,s);
+    {7}out(chT, (code,timeSlot))
+) | (
+    {8}!
+    {9}new s_1: nonce;
+    {10}out(chT, s_1);
+    {11}in(chT, (x: bitstring,t: nonce));
+    {12}if (x = totp(K,t)) then
+    {13}event ConsentAccepted(citizenID,s_1);
+    {14}event AuthAccepted(x,s_1);
+    {15}out(chT, secretDoc)
+)
+
+-- Query inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2))
+goal reachable: attacker(t_1) -> inj-event(ConsentAccepted(citizenID[],s_2),@occ13_1)
+Abbreviations:
+s_2 = s_1[!1 = @sid]
+@occ13_1 = @occ13[t = t_1,x = totp(K[],t_1),!1 = @sid]
+
+Derivation:
+Abbreviations:
+s_2 = s_1[!1 = @sid]
+@occ13_1 = @occ13[t = t_1,x = totp(K[],t_1),!1 = @sid]
+
+1. We assume as hypothesis that
+attacker(t_1).
+
+2. The attacker initially knows K[].
+attacker(K[]).
+
+3. By 2, the attacker may know K[].
+By 1, the attacker may know t_1.
+Using the function totp the attacker may obtain totp(K[],t_1).
+attacker(totp(K[],t_1)).
+
+4. By 3, the attacker may know totp(K[],t_1).
+By 1, the attacker may know t_1.
+Using the function 2-tuple the attacker may obtain (totp(K[],t_1),t_1).
+attacker((totp(K[],t_1),t_1)).
+
+5. The message (totp(K[],t_1),t_1) that the attacker may have by 4 may be received at input {11}.
+So event ConsentAccepted(citizenID[],s_2) may be executed at {13} in session @sid.
+inj-event(ConsentAccepted(citizenID[],s_2),@occ13_1).
+
+6. By 5, inj-event(ConsentAccepted(citizenID[],s_2),@occ13_1).
+The goal is reached, represented in the following fact:
+inj-event(ConsentAccepted(citizenID[],s_2),@occ13_1).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new s_1: nonce creating s_3 at {9} in copy a
+
+out(chT, ~M) with ~M = s_3 at {10} in copy a
+
+in(chT, (totp(K,a_1),a_1)) at {11} in copy a
+
+event ConsentAccepted(citizenID,s_3) at {13} in copy a (goal)
+
+The event ConsentAccepted(citizenID,s_3) is executed at {13} in copy a.
+A trace has been found.
+RESULT inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2)) is false.
+RESULT (even event(ConsentAccepted(cid,s_2)) ==> event(ConsentGiven(cid,s_2)) is false.)
+-- Query inj-event(AuthAccepted(t_1,s_2)) ==> inj-event(AuthUsed(t_1,s_2)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query inj-event(AuthAccepted(t_1,s_2)) ==> inj-event(AuthUsed(t_1,s_2))
+goal reachable: attacker(t_1) -> inj-event(AuthAccepted(totp(K[],t_1),s_2),@occ14_1)
+Abbreviations:
+s_2 = s_1[!1 = @sid]
+@occ14_1 = @occ14[t = t_1,x = totp(K[],t_1),!1 = @sid]
+
+Derivation:
+Abbreviations:
+s_2 = s_1[!1 = @sid]
+@occ14_1 = @occ14[t = t_1,x = totp(K[],t_1),!1 = @sid]
+
+1. We assume as hypothesis that
+attacker(t_1).
+
+2. The attacker initially knows K[].
+attacker(K[]).
+
+3. By 2, the attacker may know K[].
+By 1, the attacker may know t_1.
+Using the function totp the attacker may obtain totp(K[],t_1).
+attacker(totp(K[],t_1)).
+
+4. By 3, the attacker may know totp(K[],t_1).
+By 1, the attacker may know t_1.
+Using the function 2-tuple the attacker may obtain (totp(K[],t_1),t_1).
+attacker((totp(K[],t_1),t_1)).
+
+5. The message (totp(K[],t_1),t_1) that the attacker may have by 4 may be received at input {11}.
+So event AuthAccepted(totp(K[],t_1),s_2) may be executed at {14} in session @sid.
+inj-event(AuthAccepted(totp(K[],t_1),s_2),@occ14_1).
+
+6. By 5, inj-event(AuthAccepted(totp(K[],t_1),s_2),@occ14_1).
+The goal is reached, represented in the following fact:
+inj-event(AuthAccepted(totp(K[],t_1),s_2),@occ14_1).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new s_1: nonce creating s_3 at {9} in copy a
+
+out(chT, ~M) with ~M = s_3 at {10} in copy a
+
+in(chT, (totp(K,a_1),a_1)) at {11} in copy a
+
+event ConsentAccepted(citizenID,s_3) at {13} in copy a
+
+event AuthAccepted(totp(K,a_1),s_3) at {14} in copy a (goal)
+
+The event AuthAccepted(totp(K,a_1),s_3) is executed at {14} in copy a.
+A trace has been found.
+RESULT inj-event(AuthAccepted(t_1,s_2)) ==> inj-event(AuthUsed(t_1,s_2)) is false.
+RESULT (even event(AuthAccepted(t_1,s_2)) ==> event(AuthUsed(t_1,s_2)) is false.)
+-- Query not attacker(secretDoc[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query not attacker(secretDoc[])
+goal reachable: attacker(secretDoc[])
+
+Derivation:
+
+1. The attacker has some term t_1.
+attacker(t_1).
+
+2. The attacker initially knows K[].
+attacker(K[]).
+
+3. By 2, the attacker may know K[].
+By 1, the attacker may know t_1.
+Using the function totp the attacker may obtain totp(K[],t_1).
+attacker(totp(K[],t_1)).
+
+4. By 3, the attacker may know totp(K[],t_1).
+By 1, the attacker may know t_1.
+Using the function 2-tuple the attacker may obtain (totp(K[],t_1),t_1).
+attacker((totp(K[],t_1),t_1)).
+
+5. The message (totp(K[],t_1),t_1) that the attacker may have by 4 may be received at input {11}.
+So the message secretDoc[] may be sent to the attacker at output {15}.
+attacker(secretDoc[]).
+
+6. By 5, attacker(secretDoc[]).
+The goal is reached, represented in the following fact:
+attacker(secretDoc[]).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new s_1: nonce creating s_2 at {9} in copy a
+
+out(chT, ~M) with ~M = s_2 at {10} in copy a
+
+in(chT, (totp(K,a_1),a_1)) at {11} in copy a
+
+event ConsentAccepted(citizenID,s_2) at {13} in copy a
+
+event AuthAccepted(totp(K,a_1),s_2) at {14} in copy a
+
+out(chT, ~M_1) with ~M_1 = secretDoc at {15} in copy a
+
+The attacker has the message ~M_1 = secretDoc.
+A trace has been found.
+RESULT not attacker(secretDoc[]) is false.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2)) is false.
+
+Query inj-event(AuthAccepted(t_1,s_2)) ==> inj-event(AuthUsed(t_1,s_2)) is false.
+
+Query not attacker(secretDoc[]) is false.
+
+--------------------------------------------------------------
+

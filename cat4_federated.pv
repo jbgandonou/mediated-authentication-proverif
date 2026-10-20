@@ -1,0 +1,58 @@
+(* ============================================================ *)
+(* cat4_federated.pv - Category G: federated identity           *)
+(*                     (OAuth 2.0 / OpenID Connect)             *)
+(*                                                              *)
+(* Model: an identity provider issues a signed token after      *)
+(* authentication. Under C3, I controls the browser and         *)
+(* intercepts the token in the OAuth redirection.               *)
+(*                                                              *)
+(* Expected results:                                            *)
+(*   P1 - cannot be proved (adversary obtains the token)        *)
+(*   P2 - cannot be proved (adversary forges auth with token)   *)
+(*   P3 - cannot be proved (secretDoc travels on chBrowser)     *)
+(*                                                              *)
+(* Run with: proverif -lib common.pvl cat4_federated.pv         *)
+(* ============================================================ *)
+
+
+free chBrowser: channel.   (* Browser controlled by I: public *)
+
+
+(* The identity provider signs tokens with its private key.
+   The server checks the signature with the provider's public key. *)
+
+let processIdP(idpSk: key) =
+  in(chBrowser, authReq: bitstring);
+  new tokenPayload: bitstring;
+  let signedToken = sign(tokenPayload, idpSk) in
+  out(chBrowser, signedToken).
+
+let processCitizen_OAuth() =
+  in(chBrowser, s: nonce);
+  event ConsentGiven(citizenID, s);
+  out(chBrowser, citizenID);
+  in(chBrowser, token: bitstring);
+  event AuthUsed(token, s);
+  out(chBrowser, token).
+
+let processServer_OAuth(idpPk: key) =
+  new s: nonce;
+  out(chBrowser, s);
+  in(chBrowser, token: bitstring);
+  let payload = checksign(token, idpPk) in
+  event ConsentAccepted(citizenID, s);
+  event AuthAccepted(token, s);
+  out(chBrowser, secretDoc).
+
+(* The adversary controls chBrowser: it can interact with the
+   identity provider to obtain a signed token, then present it to
+   the server without involving C. Authentication is forged
+   because the token is not bound to the server's session. *)
+process
+  new idpSk: key;
+  let idpPk = pk(idpSk) in
+  (
+    !processIdP(idpSk)
+  | !processCitizen_OAuth()
+  | !processServer_OAuth(idpPk)
+  )

@@ -1,0 +1,50 @@
+=== ProVerif verification: delegated authentication under mediated access ===
+ProVerif version: Proverif 2.05. Cryptographic protocol verifier, by Bruno Blanchet, Vincent Cheval, and Marc Sylvestre
+
+--- cat1_knowledge ---
+RESULT inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2)) is false.
+RESULT (even event(ConsentAccepted(cid,s_2)) ==> event(ConsentGiven(cid,s_2)) is false.)
+RESULT inj-event(AuthAccepted(t,s_2)) ==> inj-event(AuthUsed(t,s_2)) is false.
+RESULT (even event(AuthAccepted(t,s_2)) ==> event(AuthUsed(t,s_2)) is false.)
+RESULT not attacker(secretDoc[]) is false.
+
+--- cat2_oob ---
+RESULT inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2)) is false.
+RESULT (even event(ConsentAccepted(cid,s_2)) ==> event(ConsentGiven(cid,s_2)) is false.)
+RESULT inj-event(AuthAccepted(t,s_2)) ==> inj-event(AuthUsed(t,s_2)) is false.
+RESULT (even event(AuthAccepted(t,s_2)) ==> event(AuthUsed(t,s_2)) is false.)
+RESULT not attacker(secretDoc[]) is false.
+
+--- cat3_otp_local ---
+RESULT inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2)) is false.
+RESULT (even event(ConsentAccepted(cid,s_2)) ==> event(ConsentGiven(cid,s_2)) is false.)
+RESULT inj-event(AuthAccepted(t_1,s_2)) ==> inj-event(AuthUsed(t_1,s_2)) is false.
+RESULT (even event(AuthAccepted(t_1,s_2)) ==> event(AuthUsed(t_1,s_2)) is false.)
+RESULT not attacker(secretDoc[]) is false.
+
+--- cat4_federated ---
+RESULT inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2)) is false.
+RESULT (even event(ConsentAccepted(cid,s_2)) ==> event(ConsentGiven(cid,s_2)) is false.)
+RESULT inj-event(AuthAccepted(t,s_2)) ==> inj-event(AuthUsed(t,s_2)) is false.
+RESULT (even event(AuthAccepted(t,s_2)) ==> event(AuthUsed(t,s_2)) is false.)
+RESULT not attacker(secretDoc[]) is false.
+
+--- cat5_crypto_deleg ---
+RESULT inj-event(ConsentAccepted(cid,s_2)) ==> inj-event(ConsentGiven(cid,s_2)) is false.
+RESULT (even event(ConsentAccepted(cid,s_2)) ==> event(ConsentGiven(cid,s_2)) is false.)
+RESULT inj-event(AuthAccepted(t,s_2)) ==> inj-event(AuthUsed(t,s_2)) is false.
+RESULT (even event(AuthAccepted(t,s_2)) ==> event(AuthUsed(t,s_2)) is false.)
+RESULT not attacker(secretDoc[]) is false.
+
+--- cat6_fido2 ---
+RESULT inj-event(ConsentAccepted(cid,s_3)) ==> inj-event(ConsentGiven(cid,s_3)) is false.
+RESULT (even event(ConsentAccepted(cid,s_3)) ==> event(ConsentGiven(cid,s_3)) is false.)
+RESULT inj-event(AuthAccepted(t,s_3)) ==> inj-event(AuthUsed(t,s_3)) is true.
+RESULT not attacker(secretDoc[]) is false.
+
+--- cat6_fido2_public_response ---
+RESULT inj-event(ConsentAccepted(cid,s_3)) ==> inj-event(ConsentGiven(cid,s_3)) is false.
+RESULT (even event(ConsentAccepted(cid,s_3)) ==> event(ConsentGiven(cid,s_3)) is false.)
+RESULT inj-event(AuthAccepted(t,s_3)) ==> inj-event(AuthUsed(t,s_3)) is true.
+RESULT not attacker(secretDoc[]) is false.
+

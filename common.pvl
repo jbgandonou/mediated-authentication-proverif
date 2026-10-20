@@ -1,0 +1,77 @@
+(* ============================================================ *)
+(* common.pvl - Shared declarations for all models              *)
+(* Delegated authentication under mediated access               *)
+(*                                                              *)
+(* Constraints C1, C2, C3 are encoded by the channel topology,  *)
+(* properties P1, P2, P3 by the three queries below.            *)
+(* ============================================================ *)
+
+
+(* --- Types --- *)
+
+type key.
+type nonce.
+
+fun nonce2bs(nonce): bitstring [data, typeConverter].
+
+
+(* --- Channels --- *)
+
+free chT: channel.                  (* Terminal: public, controlled by I     *)
+                                    (* No private channel C->S: encodes C1   *)
+free chS: channel [private].       (* Server <-> Registry: out of I's reach *)
+
+
+(* --- Identity --- *)
+
+free citizenID: bitstring.
+
+
+(* --- Secret document (P3) --- *)
+
+free secretDoc: bitstring [private].
+
+
+(* --- Cryptographic primitives --- *)
+
+fun senc(bitstring, key): bitstring.
+reduc forall m: bitstring, k: key; sdec(senc(m, k), k) = m.
+
+fun pk(key): key.
+fun aenc(bitstring, key): bitstring.
+reduc forall m: bitstring, k: key; adec(aenc(m, pk(k)), k) = m.
+
+fun sign(bitstring, key): bitstring.
+reduc forall m: bitstring, k: key; checksign(sign(m, k), pk(k)) = m.
+
+fun hash(bitstring): bitstring.
+
+
+(* --- Events --- *)
+
+event ConsentGiven(bitstring, nonce).     (* C consents to session s       *)
+event ConsentAccepted(bitstring, nonce).  (* S accepts the consent for s   *)
+event AuthUsed(bitstring, nonce).         (* Token produced for session s  *)
+event AuthAccepted(bitstring, nonce).     (* S accepts the token for s     *)
+
+
+(* --- Queries (P1, P2, P3) --- *)
+
+(* P1 - Non-delegable active consent
+   Injective correspondence: every acceptance by S must be
+   preceded by a distinct consent of C.
+   Encodes Definition P1, conditions (i), (ii), (iii). *)
+query cid: bitstring, s: nonce;
+  inj-event(ConsentAccepted(cid, s)) ==> inj-event(ConsentGiven(cid, s)).
+
+(* P2 - Non-forgeability of authentication
+   Injective correspondence: every token accepted by S must be
+   preceded by a legitimate production by C or its authenticator.
+   Covers both replay and forgery. *)
+query t: bitstring, s: nonce;
+  inj-event(AuthAccepted(t, s)) ==> inj-event(AuthUsed(t, s)).
+
+(* P3 - Exclusive delivery
+   Secrecy: the adversary (= I) must not obtain the document.
+   Encodes Receive(D) = {C}. *)
+query attacker(secretDoc).
